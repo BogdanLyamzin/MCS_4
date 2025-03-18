@@ -1,0 +1,8 @@
+node_modules/
+
+# IDE settings
+.vscode/
+.idea/
+
+#env files
+.env
