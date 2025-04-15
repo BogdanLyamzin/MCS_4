@@ -1,13 +1,11 @@
 import fs from "node:fs/promises";
-import path from "node:path";
 
 import * as moviesService from "../services/moviesServices.js";
 
 import HttpError from "../helpers/HttpError.js";
+import cloudinary from "../helpers/cloudinary.js";
 
 import ctrlWrapper from "../decorators/ctrlWrapper.js";
-
-const postersDir = path.resolve("public", "posters");
 
 const getMoviesController = async (req, res) => {
   const { id: owner } = req.user;
@@ -30,10 +28,12 @@ const getMovieByIdController = async (req, res) => {
 const addMovieController = async (req, res) => {
   let poster = null;
   if(req.file) {
-    const {path: oldPath, filename} = req.file;
-    const newPath = path.join(postersDir, filename);
-    await fs.rename(oldPath, newPath);
-    poster = path.join("posters", filename);
+    const {url} = await cloudinary.uploader.upload(req.file.path, {
+      folder: "posters",
+      use_filename: true,
+    });
+    poster = url;
+    await fs.unlink(req.file.path);
   }
   const { id: owner } = req.user;
   const data = await moviesService.addMovie({ ...req.body, poster, owner });
