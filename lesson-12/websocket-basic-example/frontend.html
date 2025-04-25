@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Title</title>
+  </head>
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
+  <body>
+    <ul id="message-list"></ul>
+    <button class="hidden" id="close-socket">Close connection</button>
+
+    <script>
+      const messageList = document.querySelector("#message-list");
+      const btnCLoseConnection = document.querySelector("#close-socket");
+
+      const socket = new WebSocket("ws://localhost:5000");
+      //    socket.onopen = ()=> console.log("Connection successfully");
+
+        const closeConnection = ()=> {
+            socket.close(1000, "Finish connection");
+            btnCLoseConnection.classList.add("hidden");
+        }
+
+      socket.addEventListener("open", () => {
+        messageList.insertAdjacentHTML(
+          "beforeend",
+          "<li>Success connection</li>"
+        );
+        btnCLoseConnection.classList.remove("hidden");
+        btnCLoseConnection.addEventListener("click", closeConnection);
+      });
+
+      socket.addEventListener("message", event => {
+        messageList.insertAdjacentHTML(
+          "beforeend",
+          `<li>${event.data}</li>`
+        );
+      })
+
+      socket.addEventListener("close", event => {
+        btnCLoseConnection.classList.add("hidden");
+        btnCLoseConnection.removeEventListener("click", closeConnection);
+        if(!event.wasClean) {
+            return messageList.insertAdjacentHTML("beforeend", "<li>Server crushed</li>");
+        }
+        messageList.insertAdjacentHTML("beforeend", `<li>Connection close. ${event.reason}</li>`);
+        // console.log(event.wasClean);
+        // console.log(event.reason);
+        // console.log(event.code);
+      })
+    </script>
+  </body>
+</html>
